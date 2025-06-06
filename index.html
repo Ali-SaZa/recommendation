@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامه پیشنهاددهنده مکان ملاقات کاری</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif; /* تغییر به Open Sans برای پشتیبانی بهتر از فارسی */
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8; /* پس‌زمینه خاکستری روشن */
+            color: #333;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif; /* Montserrat برای عنوان‌ها */
+            font-weight: 700;
+        }
+        /* رنگ‌های سفارشی Tailwind */
+        .bg-navy-blue { background-color: #0F4C81; }
+        .text-navy-blue { color: #0F4C81; }
+        .bg-sage-green { background-color: #A2B9A3; }
+        .text-sage-green { color: #A2B9A3; }
+        .bg-accent-red { background-color: #FF6B6B; } /* برای دکمه‌های فراخوان عمل */
+        .text-accent-red { color: #FF6B6B; }
+
+        /* استایل کلی کانتینر */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* استایل کارت‌ها */
+        .card {
+            background-color: white;
+            border-radius: 1rem; /* گوشه‌های گرد */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* سایه */
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 2px solid transparent; /* اضافه کردن حاشیه شفاف برای هاور */
+        }
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* استایل دکمه‌های رادیویی */
+        .radio-option input[type="radio"] {
+            display: none; /* مخفی کردن دکمه رادیویی پیش‌فرض */
+        }
+        .radio-option label {
+            display: block;
+            background-color: white;
+            border: 2px solid #e2e8f0; /* حاشیه خاکستری روشن */
+            border-radius: 0.75rem; /* گوشه‌های گرد */
+            padding: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            font-weight: 600; /* نیمه‌پررنگ */
+            text-align: center;
+        }
+        .radio-option input[type="radio"]:checked + label {
+            background-color: #A2B9A3; /* پس‌زمینه سبز مریم گلی هنگام انتخاب */
+            border-color: #0F4C81; /* حاشیه آبی نفتی هنگام انتخاب */
+            color: white;
+            transform: translateY(-2px); /* افکت کوچک بالا رفتن */
+        }
+        .radio-option label:hover {
+            background-color: #f0f4f8; /* خاکستری خیلی روشن هنگام هاور */
+            border-color: #0F4C81; /* آبی نفتی هنگام هاور */
+        }
+
+        /* استایل دکمه‌ها */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* گوشه‌های گرد */
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #FF6B6B; /* قرمز برجسته */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #e05e5e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .btn-secondary {
+            background-color: #0F4C81; /* آبی نفتی */
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #0a3d6a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .btn-outline {
+            border: 2px solid #0F4C81;
+            color: #0F4C81;
+            background-color: transparent;
+        }
+        .btn-outline:hover {
+            background-color: #0F4C81;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* مخفی کردن عناصر در ابتدا */
+        .hidden {
+            display: none;
+        }
+
+        /* استایل برای صفحه نتایج */
+        .venue-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: right; /* تنظیم جهت متن به راست برای فارسی */
+            transition: transform 0.2s ease-in-out;
+        }
+        .venue-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .venue-image {
+            width: 100%;
+            height: 180px; /* ارتفاع ثابت برای تصاویر */
+            object-fit: cover;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .amenity-tag {
+            background-color: #e2e8f0; /* رنگ خاکستری روشن برای تگ‌ها */
+            color: #4a5568; /* رنگ متن خاکستری تیره */
+            font-size: 0.75rem; /* text-xs */
+            padding: 0.25rem 0.75rem; /* px-2 py-1 */
+            border-radius: 9999px; /* rounded-full */
+            white-space: nowrap; /* جلوگیری از شکستن خط */
+        }
+        /* تنظیم جهت برای محتوای درون کارت‌ها */
+        .venue-card h3, .venue-card p, .venue-card div, .venue-card button {
+            text-align: right; /* متن راست چین */
+        }
+    </style>
+</head>
+<body class="bg-[#f0f4f8]">
+    <div class="container min-h-screen flex flex-col justify-center items-center py-8">
+
+        <!-- سربرگ -->
+        <header class="w-full text-center mb-8">
+            <h1 class="text-4xl text-navy-blue">پیشنهاددهنده مکان ملاقات کاری</h1>
+            <p class="text-gray-600 mt-2">مکان مناسب برای ملاقات‌های کاری خود را بیابید.</p>
+        </header>
+
+        <!-- بخش صفحه اصلی -->
+        <section id="homepage" class="w-full max-w-2xl">
+            <h2 class="text-2xl text-navy-blue mb-6 text-center">درباره ملاقات خود بگویید</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- کارت بودجه -->
+                <div class="card p-6 border border-sage-green" data-category="budget">
+                    <h3 class="text-xl text-navy-blue mb-4">💰 بودجه</h3>
+                    <div class="flex flex-col space-y-3">
+                        <div class="radio-option">
+                            <input type="radio" id="budget-cheap" name="budget" value="cheap">
+                            <label for="budget-cheap">ارزان</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="budget-moderate" name="budget" value="moderate">
+                            <label for="budget-moderate">متوسط</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="budget-premium" name="budget" value="premium">
+                            <label for="budget-premium">گران</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="budget-free" name="budget" value="free">
+                            <label for="budget-free">رایگان</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- کارت همراه -->
+                <div class="card p-6 border border-sage-green" data-category="companion">
+                    <h3 class="text-xl text-navy-blue mb-4">👥 همراه</h3>
+                    <div class="flex flex-col space-y-3">
+                        <div class="radio-option">
+                            <input type="radio" id="companion-business" name="companion" value="business">
+                            <label for="companion-business">ملاقات کاری</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="companion-friends" name="companion" value="friends">
+                            <label for="companion-friends">دوستان</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="companion-family" name="companion" value="family">
+                            <label for="companion-family">خانواده</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="companion-solo" name="companion" value="solo">
+                            <label for="companion-solo">انفرادی</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- کارت نوع مکان -->
+                <div class="card p-6 border border-sage-green" data-category="venueType">
+                    <h3 class="text-xl text-navy-blue mb-4">🏷️ نوع مکان</h3>
+                    <div class="flex flex-col space-y-3">
+                        <div class="radio-option">
+                            <input type="radio" id="venue-cafe" name="venueType" value="cafe">
+                            <label for="venue-cafe">کافه</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="venue-restaurant" name="venueType" value="restaurant">
+                            <label for="venue-restaurant">رستوران</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="venue-coworking" name="venueType" value="coworking">
+                            <label for="venue-coworking">فضای کار اشتراکی</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="venue-hotel" name="venueType" value="hotel">
+                            <label for="venue-hotel">لابی هتل</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- دکمه "شروع پرسش و پاسخ" (مخفی خواهد بود چون انتقال خودکار است) -->
+            <div class="mt-8 text-center">
+                <button id="start-qa-btn" class="btn btn-primary px-8 py-3 text-lg hidden">شروع پرسش و پاسخ</button>
+            </div>
+        </section>
+
+        <!-- بخش صفحه پرسش و پاسخ (در ابتدا مخفی) -->
+        <section id="qa-screen" class="w-full max-w-2xl hidden flex flex-col items-center">
+            <h2 class="text-2xl text-navy-blue mb-6 text-center">چند سوال دیگر</h2>
+            <!-- نوار پیشرفت -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+                <div id="progress-bar" class="bg-sage-green h-2.5 rounded-full transition-all duration-500 ease-in-out" style="width: 0%;"></div>
+            </div>
+
+            <!-- کانتینر سوال -->
+            <div id="question-container" class="w-full">
+                <!-- سوالات به صورت پویا در اینجا بارگذاری خواهند شد -->
+            </div>
+
+            <!-- دکمه‌های کنترل -->
+            <div class="flex justify-between w-full mt-8 space-x-4 space-x-reverse"> <!-- space-x-reverse برای RTL -->
+                <button id="next-btn" class="btn btn-secondary flex-1 hidden">سوال بعدی</button> <!-- مخفی کردن "سوال بعدی" -->
+                <button id="show-results-btn" class="btn btn-primary flex-1 hidden">📊 نمایش نتایج</button> <!-- مخفی کردن "نمایش نتایج" -->
+                <button id="skip-results-btn" class="btn btn-outline flex-1 hidden">پرش به نتایج</button> <!-- مخفی کردن "پرش به نتایج" -->
+                <button id="back-btn" class="btn btn-outline flex-1">🔙 بازگشت</button>
+            </div>
+        </section>
+
+        <!-- بخش صفحه نتایج (در ابتدا مخفی) -->
+        <section id="results-page" class="w-full max-w-4xl hidden">
+            <h2 class="text-3xl text-navy-blue mb-8 text-center">مکان‌های ملاقات پیشنهادی</h2>
+            <div id="venues-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- کارت‌های مکان به صورت پویا در اینجا بارگذاری خواهند شد -->
+            </div>
+            <div class="mt-8 text-center">
+                <button id="reset-app-btn" class="btn btn-secondary px-8 py-3 text-lg">شروع مجدد</button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // عناصر DOM
+        const homepage = document.getElementById('homepage');
+        const qaScreen = document.getElementById('qa-screen');
+        const resultsPage = document.getElementById('results-page');
+        const startQaBtn = document.getElementById('start-qa-btn'); // این دکمه دیگر استفاده نمی‌شود و مخفی است
+        const progressBar = document.getElementById('progress-bar');
+        const questionContainer = document.getElementById('question-container');
+        const backBtn = document.getElementById('back-btn');
+        const nextBtn = document.getElementById('next-btn'); // این دکمه دیگر استفاده نمی‌شود و مخفی است
+        const showResultsBtn = document.getElementById('show-results-btn'); // این دکمه دیگر استفاده نمی‌شود و مخفی است
+        const skipResultsBtn = document.getElementById('skip-results-btn'); // این دکمه دیگر استفاده نمی‌شود و مخفی است
+        const venuesList = document.getElementById('venues-list');
+        const resetAppBtn = document.getElementById('reset-app-btn');
+
+        // متغیرهای وضعیت
+        let currentScreen = 'homepage';
+        let currentQuestionIndex = 0;
+        const userSelections = {
+            budget: null,
+            companion: null,
+            venueType: null,
+            ambiance: null,
+            wifi: null,
+            noise: null,
+            duration: null,
+            internationalClients: null
+        };
+
+        // سوالات پرسش و پاسخ
+        const questions = [
+            {
+                id: 'q1',
+                question: 'فضای مورد علاقه شما چیست؟',
+                name: 'ambiance',
+                options: [
+                    { value: 'formal', label: 'رسمی (مثلاً رستوران مجلل)' },
+                    { value: 'casual', label: 'خودمانی (مثلاً کافه شیک)' },
+                    { value: 'no-preference', label: 'تفاوتی ندارد' }
+                ]
+            },
+            {
+                id: 'q2',
+                question: 'آیا به Wi-Fi پرسرعت نیاز دارید؟',
+                name: 'wifi',
+                options: [
+                    { value: 'yes', label: 'بله (اولویت)' },
+                    { value: 'no', label: 'خیر' },
+                    { value: 'doesn-matter', label: 'مهم نیست' }
+                ]
+            },
+            {
+                id: 'q3',
+                question: 'سکوت یا شلوغی پس‌زمینه را ترجیح می‌دهید؟',
+                name: 'noise',
+                options: [
+                    { value: 'quiet', label: 'آرام (اتاق‌های خصوصی)' },
+                    { value: 'ambient', label: 'صدای محیط (فضاهای پر جنب و جوش)' },
+                    { value: 'neutral', label: 'خنثی' }
+                ]
+            },
+            {
+                id: 'q4',
+                question: 'مدت زمان تخمینی ملاقات چقدر است؟',
+                name: 'duration',
+                options: [
+                    { value: '<1hr', label: 'کمتر از ۱ ساعت' },
+                    { value: '1-2hr', label: '۱-۲ ساعت' },
+                    { value: '2+hr', label: 'بیشتر از ۲ ساعت' }
+                ]
+            },
+            {
+                id: 'q5',
+                question: 'آیا میزبان مشتریان بین‌المللی هستید؟',
+                name: 'internationalClients',
+                options: [
+                    { value: 'yes', label: 'بله (فضای بین‌المللی لازم است)' },
+                    { value: 'no', label: 'خیر' },
+                    { value: 'n/a', label: 'قابل اجرا نیست' }
+                ]
+            }
+        ];
+
+        // داده‌های مکان‌های نمونه
+        const allVenues = [
+            {
+                id: 1,
+                name: 'کافه گوشه دنج',
+                image: 'https://placehold.co/400x300/A2B9A3/FFFFFF?text=Cafe+1',
+                address: 'خیابان تجارت، شهر',
+                distance: '۰.۸ کیلومتر',
+                amenities: ['Wi-Fi', 'پریز برق'],
+                rating: 4.8,
+                budget: 'moderate',
+                venueType: 'cafe',
+                ambiance: 'casual',
+                wifi: 'yes',
+                noise: 'quiet',
+                duration: '1-2hr',
+                internationalClients: 'no'
+            },
+            {
+                id: 2,
+                name: 'رستوران اجرایی',
+                image: 'https://placehold.co/400x300/0F4C81/FFFFFF?text=Restaurant+1',
+                address: 'بلوار نخبگان، شهر',
+                distance: '۱.۹ کیلومتر',
+                amenities: ['اتاق‌های خصوصی', 'پارکینگ'],
+                rating: 4.9,
+                budget: 'premium',
+                venueType: 'restaurant',
+                ambiance: 'formal',
+                wifi: 'yes',
+                noise: 'quiet',
+                duration: '2+hr',
+                internationalClients: 'yes'
+            },
+            {
+                id: 3,
+                name: 'مرکز کار اشتراکی',
+                image: 'https://placehold.co/400x300/FF6B6B/FFFFFF?text=Co-Working+1',
+                address: 'جاده فناوری، شهر',
+                distance: '۱.۳ کیلومتر',
+                amenities: ['Wi-Fi پرسرعت', 'پریز برق', 'اتاق جلسه'],
+                rating: 4.5,
+                budget: 'moderate',
+                venueType: 'coworking',
+                ambiance: 'casual',
+                wifi: 'yes',
+                noise: 'ambient',
+                duration: '2+hr',
+                internationalClients: 'no'
+            },
+            {
+                id: 4,
+                name: 'بیسترو جهانی',
+                image: 'https://placehold.co/400x300/A2B9A3/FFFFFF?text=Restaurant+2',
+                address: 'بلوار بین‌المللی، شهر',
+                distance: '۳.۲ کیلومتر',
+                amenities: ['غذاهای بین‌المللی', 'پارکینگ'],
+                rating: 4.7,
+                budget: 'premium',
+                venueType: 'restaurant',
+                ambiance: 'formal',
+                wifi: 'yes',
+                noise: 'ambient',
+                duration: '1-2hr',
+                internationalClients: 'yes'
+            },
+            {
+                id: 5,
+                name: 'کافه و کد',
+                image: 'https://placehold.co/400x300/0F4C81/FFFFFF?text=Cafe+2',
+                address: 'خیابان مرکزی، شهر',
+                distance: '۰.۵ کیلومتر',
+                amenities: ['Wi-Fi', 'پریز برق', 'پارکینگ رایگان'],
+                rating: 4.2,
+                budget: 'cheap',
+                venueType: 'cafe',
+                ambiance: 'casual',
+                wifi: 'yes',
+                noise: 'ambient',
+                duration: '<1hr',
+                internationalClients: 'no'
+            },
+            {
+                id: 6,
+                name: 'سالن لابی هتل',
+                image: 'https://placehold.co/400x300/FF6B6B/FFFFFF?text=Hotel+Lobby+1',
+                address: 'هتل بزرگ، شهر',
+                distance: '۲.۴ کیلومتر',
+                amenities: ['Wi-Fi', 'نشیمن راحت', 'پارکینگ با خدمه'],
+                rating: 4.6,
+                budget: 'free',
+                venueType: 'hotel',
+                ambiance: 'neutral',
+                wifi: 'doesn-matter',
+                noise: 'ambient',
+                duration: '<1hr',
+                internationalClients: 'yes'
+            },
+            {
+                id: 7,
+                name: 'استودیوی مطالعه آرام',
+                image: 'https://placehold.co/400x300/A2B9A3/FFFFFF?text=Co-Working+2',
+                address: 'کوچه آرام، شهر',
+                distance: '۱.۴ کیلومتر',
+                amenities: ['مناطق فوق‌العاده آرام', 'Wi-Fi پرسرعت', 'غرفه‌های خصوصی'],
+                rating: 4.9,
+                budget: 'premium',
+                venueType: 'coworking',
+                ambiance: 'formal',
+                wifi: 'yes',
+                noise: 'quiet',
+                duration: '2+hr',
+                internationalClients: 'no'
+            },
+            {
+                id: 8,
+                name: 'بیسترو کافه شهری',
+                image: 'https://placehold.co/400x300/0F4C81/FFFFFF?text=Cafe+3',
+                address: 'خیابان اصلی، شهر',
+                distance: '۱.۱ کیلومتر',
+                amenities: ['Wi-Fi', 'نشیمن در فضای باز'],
+                rating: 4.3,
+                budget: 'moderate',
+                venueType: 'cafe',
+                ambiance: 'casual',
+                wifi: 'yes',
+                noise: 'ambient',
+                duration: '1-2hr',
+                internationalClients: 'no'
+            }
+        ];
+
+
+        // تابع برای نمایش یک صفحه خاص
+        function showPage(pageId) {
+            homepage.classList.add('hidden');
+            qaScreen.classList.add('hidden');
+            resultsPage.classList.add('hidden');
+
+            if (pageId === 'homepage') {
+                homepage.classList.remove('hidden');
+            } else if (pageId === 'qa-screen') {
+                qaScreen.classList.remove('hidden');
+            } else if (pageId === 'results-page') {
+                resultsPage.classList.remove('hidden');
+            }
+            currentScreen = pageId;
+        }
+
+        // --- منطق صفحه اصلی ---
+        const homepageCards = document.querySelectorAll('#homepage .card');
+        homepageCards.forEach(card => {
+            card.addEventListener('change', (event) => {
+                const category = card.dataset.category;
+                const selectedValue = event.target.value;
+                userSelections[category] = selectedValue;
+
+                // اگر "ملاقات کاری" انتخاب شد، به صورت خودکار به صفحه پرسش و پاسخ بروید
+                if (userSelections.companion === 'business') {
+                    currentQuestionIndex = 0; // بازنشانی شاخص سوال
+                    loadQuestion();
+                    showPage('qa-screen');
+                }
+                // دکمه start-qa-btn دیگر لازم نیست، بنابراین همیشه مخفی می‌ماند
+            });
+        });
+
+        // startQaBtn.addEventListener('click', () => { ... }); // این رویداد شنونده دیگر استفاده نمی‌شود
+
+        // --- منطق صفحه پرسش و پاسخ ---
+        function loadQuestion() {
+            // مخفی کردن دکمه‌های "سوال بعدی"، "نمایش نتایج" و "پرش به نتایج"
+            nextBtn.classList.add('hidden');
+            showResultsBtn.classList.add('hidden');
+            skipResultsBtn.classList.add('hidden');
+
+            if (currentQuestionIndex < questions.length) {
+                const q = questions[currentQuestionIndex];
+                let html = `
+                    <div class="card p-6 mb-6">
+                        <h3 class="text-xl text-navy-blue mb-4">${currentQuestionIndex + 1}. ${q.question}</h3>
+                        <div class="flex flex-col space-y-3">
+                `;
+                q.options.forEach(option => {
+                    const checked = userSelections[q.name] === option.value ? 'checked' : '';
+                    html += `
+                        <div class="radio-option">
+                            <input type="radio" id="${q.id}-${option.value}" name="${q.name}" value="${option.value}" ${checked}>
+                            <label for="${q.id}-${option.value}">${option.label}</label>
+                        </div>
+                    `;
+                });
+                html += `
+                        </div>
+                    </div>
+                `;
+                questionContainer.innerHTML = html;
+
+                // اضافه کردن رویداد شنونده برای تغییرات دکمه رادیویی
+                document.querySelectorAll(`input[name="${q.name}"]`).forEach(radio => {
+                    radio.addEventListener('change', (event) => {
+                        userSelections[q.name] = event.target.value;
+                        // بلافاصله به سوال بعدی بروید یا نتایج را نمایش دهید
+                        if (currentQuestionIndex < questions.length - 1) {
+                            currentQuestionIndex++;
+                            loadQuestion();
+                        } else {
+                            // آخرین سوال پاسخ داده شد، نتایج را نمایش دهید
+                            showResults();
+                        }
+                    });
+                });
+
+                updateProgressBar();
+                updateButtonsVisibility(); // هنوز برای دکمه بازگشت لازم است
+            } else {
+                // همه سوالات پاسخ داده شد، نتایج را نمایش دهید (اگر به این نقطه رسید)
+                showResults();
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function updateButtonsVisibility() {
+            // دکمه بازگشت را مدیریت کنید
+            if (currentQuestionIndex === 0) {
+                backBtn.classList.add('hidden');
+            } else {
+                backBtn.classList.remove('hidden');
+            }
+
+            // دکمه‌های "سوال بعدی"، "نمایش نتایج" و "پرش به نتایج" همیشه مخفی هستند زیرا انتقال خودکار است
+            nextBtn.classList.add('hidden');
+            showResultsBtn.classList.add('hidden');
+            skipResultsBtn.classList.add('hidden');
+        }
+
+        // nextBtn.addEventListener('click', () => { ... }); // این رویداد شنونده دیگر استفاده نمی‌شود
+
+        backBtn.addEventListener('click', () => {
+            currentQuestionIndex--;
+            if (currentQuestionIndex >= 0) {
+                loadQuestion();
+            } else {
+                showPage('homepage'); // اگر سوالی نمانده، به صفحه اصلی برگردید
+                // بازنشانی وضعیت دکمه‌های رادیویی صفحه اصلی
+                document.querySelectorAll('#homepage input[type="radio"]').forEach(radio => {
+                    radio.checked = false;
+                });
+                // اطمینان حاصل کنید که انتخاب‌های صفحه اصلی بازنشانی می‌شوند
+                userSelections.budget = null;
+                userSelections.companion = null;
+                userSelections.venueType = null;
+            }
+        });
+
+        // showResultsBtn.addEventListener('click', () => { ... }); // این رویداد شنونده دیگر استفاده نمی‌شود
+        // skipResultsBtn.addEventListener('click', () => { ... }); // این رویداد شنونده دیگر استفاده نمی‌شود
+
+        // --- منطق صفحه نتایج ---
+        function showResults() {
+            showPage('results-page');
+            const filteredVenues = filterVenues();
+            displayVenues(filteredVenues);
+        }
+
+        function filterVenues() {
+            // با فیلتر اولیه برای همراه و نوع مکان شروع کنید
+            let filtered = allVenues.filter(venue =>
+                venue.companion === userSelections.companion &&
+                (userSelections.venueType ? venue.venueType === userSelections.venueType : true) &&
+                (userSelections.budget ? venue.budget === userSelections.budget : true)
+            );
+
+            // اعمال فیلترهای پرسش و پاسخ فقط در صورتی که پاسخ داده شده باشند
+            if (userSelections.ambiance && userSelections.ambiance !== 'no-preference') {
+                filtered = filtered.filter(venue => venue.ambiance === userSelections.ambiance);
+            }
+            if (userSelections.wifi && userSelections.wifi !== 'doesn-matter') {
+                filtered = filtered.filter(venue => venue.wifi === 'yes'); // فقط آن‌هایی که Wi-Fi 'yes' دارند را فیلتر کنید
+            }
+            if (userSelections.noise && userSelections.noise !== 'neutral') {
+                filtered = filtered.filter(venue => venue.noise === userSelections.noise);
+            }
+            if (userSelections.duration) {
+                filtered = filtered.filter(venue => venue.duration === userSelections.duration);
+            }
+            if (userSelections.internationalClients && userSelections.internationalClients !== 'n/a') {
+                filtered = filtered.filter(venue => venue.internationalClients === userSelections.internationalClients);
+            }
+
+            return filtered;
+        }
+
+        function displayVenues(venues) {
+            venuesList.innerHTML = ''; // پاک کردن نتایج قبلی
+            if (venues.length === 0) {
+                venuesList.innerHTML = `
+                    <p class="text-center text-gray-700 col-span-full">مکانی با معیارهای شما یافت نشد. لطفا انتخاب‌های خود را تنظیم کنید!</p>
+                `;
+                return;
+            }
+
+            venues.forEach(venue => {
+                const amenitiesHtml = venue.amenities.map(amenity =>
+                    `<span class="amenity-tag">${amenity}</span>`
+                ).join(' ');
+
+                const venueCard = `
+                    <div class="venue-card p-4 flex flex-col items-start text-right">
+                        <img src="${venue.image}" alt="${venue.name}" class="venue-image">
+                        <h3 class="text-xl text-navy-blue mb-2">${venue.name}</h3>
+                        <p class="text-gray-600 text-sm mb-1">${venue.address} • ${venue.distance}</p>
+                        <div class="flex items-center text-yellow-500 mb-2">
+                            ${'⭐'.repeat(Math.floor(venue.rating))} ${venue.rating}
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4 justify-end"> <!-- برای راست چین کردن تگ‌ها -->
+                            ${amenitiesHtml}
+                        </div>
+                        <button class="btn btn-outline w-full mt-auto">مشاهده جزئیات</button>
+                    </div>
+                `;
+                venuesList.innerHTML += venueCard;
+            });
+        }
+
+        resetAppBtn.addEventListener('click', () => {
+            // بازنشانی تمام انتخاب‌ها
+            for (const key in userSelections) {
+                userSelections[key] = null;
+            }
+            // پاک کردن انتخاب‌های دکمه‌های رادیویی در صفحه اصلی
+            document.querySelectorAll('#homepage input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+            startQaBtn.classList.add('hidden'); // مخفی کردن دکمه "شروع پرسش و پاسخ"
+            currentQuestionIndex = 0; // بازنشانی شاخص سوال
+            updateProgressBar(); // بازنشانی نوار پیشرفت
+
+            showPage('homepage'); // بازگشت به صفحه اصلی
+        });
+
+        // بارگذاری اولیه
+        window.onload = () => {
+            showPage('homepage');
+        };
+    </script>
+</body>
+</html>
