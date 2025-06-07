@@ -282,7 +282,7 @@
     </div>
 
     <script>
-        // عناصر DOM
+        // DOM Elements
         const homepage = document.getElementById('homepage');
         const qaScreen = document.getElementById('qa-screen');
         const resultsPage = document.getElementById('results-page');
@@ -296,7 +296,7 @@
         const venuesList = document.getElementById('venues-list');
         const resetAppBtn = document.getElementById('reset-app-btn');
 
-        // متغیرهای وضعیت
+        // State Variables
         let currentScreen = 'homepage';
         let currentQuestionIndex = 0;
         const userSelections = {
@@ -310,7 +310,7 @@
             internationalClients: null
         };
 
-        // سوالات پرسش و پاسخ
+        // Q&A Questions
         const questions = [
             {
                 id: 'q1',
@@ -364,7 +364,7 @@
             }
         ];
 
-        // داده‌های مکان‌های نمونه
+        // Dummy Venue Data - Expanded to 10 entries
         const allVenues = [
             {
                 id: 1,
@@ -493,6 +493,38 @@
                 noise: 'ambient',
                 duration: '1-2hr',
                 internationalClients: 'no'
+            },
+            {
+                id: 9,
+                name: 'رستوران رو به دریا',
+                image: 'https://placehold.co/400x300/0F4C81/FFFFFF?text=Restaurant+3',
+                address: 'بلوار ساحلی، بندر',
+                distance: '۵.۰ کیلومتر',
+                amenities: ['منظره دریا', 'غذاهای دریایی تازه', 'پارکینگ اختصاصی'],
+                rating: 4.6,
+                budget: 'premium',
+                venueType: 'restaurant',
+                ambiance: 'formal',
+                wifi: 'no',
+                noise: 'ambient',
+                duration: '2+hr',
+                internationalClients: 'yes'
+            },
+            {
+                id: 10,
+                name: 'کافه هنر و فرهنگ',
+                image: 'https://placehold.co/400x300/A2B9A3/FFFFFF?text=Cafe+4',
+                address: 'گالری هنر، مرکز شهر',
+                distance: '۰.۷ کیلومتر',
+                amenities: ['فضای هنری', 'Wi-Fi رایگان', 'کتابخانه کوچک'],
+                rating: 4.4,
+                budget: 'cheap',
+                venueType: 'cafe',
+                ambiance: 'casual',
+                wifi: 'yes',
+                noise: 'ambient',
+                duration: '1-2hr',
+                internationalClients: 'no'
             }
         ];
 
@@ -586,6 +618,7 @@
         }
 
         function updateProgressBar() {
+            // اطمینان از اینکه progress به 100% می‌رسد وقتی به آخرین سوال می‌رسیم
             const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
             progressBar.style.width = `${progress}%`;
         }
@@ -646,7 +679,11 @@
                 filtered = filtered.filter(venue => venue.ambiance === userSelections.ambiance);
             }
             if (userSelections.wifi && userSelections.wifi !== 'doesn-matter') {
-                filtered = filtered.filter(venue => venue.wifi === 'yes'); // فقط آن‌هایی که Wi-Fi 'yes' دارند را فیلتر کنید
+                // اگر کاربر Wi-Fi "بله" انتخاب کرد، فقط مکان‌هایی با Wi-Fi "بله" را نشان دهید
+                // اگر "خیر" یا "مهم نیست" انتخاب کرد، همه را نشان دهید
+                if (userSelections.wifi === 'yes') {
+                    filtered = filtered.filter(venue => venue.wifi === 'yes');
+                }
             }
             if (userSelections.noise && userSelections.noise !== 'neutral') {
                 filtered = filtered.filter(venue => venue.noise === userSelections.noise);
